@@ -8,26 +8,52 @@
 #
 
 library(shiny)
+library(shinyWidgets)
+library(eegUtils)
+source("utils.R")
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("EEG in the classroom!"),
 
-    # Sidebar with a slider input for number of bins
+    # Sidebar layout ----------------
     sidebarLayout(
+        # sidebar panel ----------------
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
 
-        # Show a plot of the generated distribution
+          # fileInput edf_file -------------
+          fileInput("edf_file",
+                    "Upload EDF file:",
+                    accept = ".edf"),
+
+          # PSD plot selection --------------------
+          h4("Power spectral density plot"),
+          shinyWidgets::checkboxGroupButtons(
+            "psd_plot_channels",
+            "Which electrode(s) (i.e. channels) should be plotted? All are selected by default.",
+            choices = expected_channels,
+            selected = expected_channels,
+            individual = TRUE
+          ),
+          sliderInput(
+            "psd_frequency_range",
+            "Select a range of frequencies to show on the x-axis.",
+            min = 1, max = 60, step = 1,
+            value = c(1, 40)
+          ),
+
+          br(),br(),
+
+          # go button -----------------
+          actionButton("go", "Let's go!")
+
+        ), # sidebarpanel
+
         mainPanel(
-            plotOutput("distPlot")
-        )
-    )
+          #textOutput("what")
+          plotOutput("psd_plot")
+        ) #mainpanel
+    )# sidebar layout
 ))

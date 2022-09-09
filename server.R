@@ -1,29 +1,40 @@
-#
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
-
 library(shiny)
+library(shinyWidgets)
 library(eegUtils)
+source("utils.R")
 
-# Define server logic required to draw a histogram
 shinyServer(function(input, output) {
+  observeEvent(input$go, {
 
-    output$distPlot <- renderPlot({
-
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
-
+    # Read in and reference the EDF data from input$edf_file ----------
+    #edf_data <- reactive({
+    #  infile <- input$edf_file
+    #  if (is.null(infile)) {
+    #    # User has not uploaded a file yet
+    #    return(NULL)
+    #  }
+    #  # Or, read in
+    #  read_edf_file(infile$datapath)
+    #})
+    edf_data <- reactive({
+      read_edf_file()
     })
 
+    ### Reactive variables for conditionalPanel interaction in ui.R
+    # output$data_exists <- reactive(!is.null(edf_data()))
+    # outputOptions(output, "data_exists", suspendWhenHidden = FALSE)
+
+
+
+    # Make a PSD plot ----------
+    # Separate reactive for faster response time in app
+    psd_data <- reactive({
+      prep_psd_data(edf_data())
+    })
+
+   output$psd_plot <- renderPlot({
+     make_psd_plot(psd_data(), input$psd_plot_channels, input$psd_frequency_range)
+   })
+
+  })
 })
