@@ -45,6 +45,13 @@ shinyUI(fluidPage(
           ),
 
           br(),br(),
+          h4("Alpha power topoplot"),
+          sliderInput(
+            "alpha_power_topoplot_bins",
+            "How fine-grained should the contour be? Higher number for more contour lines.",
+            min = 2, max = 30, step = 1,
+            value = 6
+          ),
 
           # go button -----------------
           actionButton("go", "Let's go!")
@@ -52,8 +59,15 @@ shinyUI(fluidPage(
         ), # sidebarpanel
 
         mainPanel(
-          #textOutput("what")
-          plotOutput("psd_plot")
+          # psd plot  ------------
+          uiOutput("psd_plot_ui"),
+
+          br(),br(),
+
+          # alpha power topoplot -----------
+          uiOutput("alpha_power_topoplot_ui")
+
+
         ) #mainpanel
     )# sidebar layout
 ))

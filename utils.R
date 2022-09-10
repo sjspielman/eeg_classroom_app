@@ -4,6 +4,9 @@ expected_channels <-c("AF3", "AF4", "F3", "F4", "F7", "F8", "FC5", "FC6", "T7", 
 channel_location_df <- eegUtils:::electrodeLocs %>%
   dplyr::filter(electrode %in% expected_channels)
 
+# alpha waves are in [8,12]
+alpha_freq_min <- 8
+alpha_freq_max <- 12
 
 
 #' Function to read and optionally reference an EDF file
@@ -110,27 +113,31 @@ make_psd_plot <- function(plot_data, plot_channels, frequency_range=NULL) {
 
 
 
-make_topoplot <- function(edf_data, topo_bins = 6) {
-  # 6 is their default
+#' Function to make a topoplot of power values
+#'
+#' @param psd_data df from `make_psd_data()`
+#' @param topo_bins number of bins for the topoplot. Higher = finer contour.
+#'  Default: 6 (same as eegUtils)
+#' @param freq_min minimum frequency to include in topoplot. Default: -Inf
+#' @param freq_max maximum frequency to include in topoplot. Default: Inf
+#'
+#' @return ggplot2 plot object
+make_power_topoplot <- function(psd_data, topo_bins = 6, freq_min = -Inf, freq_max = Inf) {
 
   # Reference: https://craddm.github.io/eegUtils/articles/topoplot/topoplot.html
-  # how about this one https://www.cincibrainlab.com/post/topographic-plotting-of-eeg-data-in-r/
-  # it sounds like I just need to give the topoplot data with the right ames
-  # we want to start with the psd_data, take the mean of the alpha
-
-  topo_bins <- 10
   psd_data %>%
     dplyr::inner_join(eegUtils:::electrodeLocs, by = c("channel" = "electrode")) %>%
     # Need to filter here down to alpha business
-    dplyr::filter(dplyr::between(frequency, 8, 12)) %>%
+    dplyr::filter(dplyr::between(frequency, freq_min, freq_max)) %>%
     ggplot2::ggplot() +
     ggplot2::aes(x = x,
                  y = y,
                  fill = power,
                  z = power) +
     eegUtils::geom_topo(color = "black",
-                        bins = topo_bins) +
-    ggplot2::scale_fill_distiller(palette = "RdBu") +
+                        bins = topo_bins,
+                        interp_limit = "head") +
+    ggplot2::scale_fill_gradientn(colours = rainbow(10)) +
     ggplot2::theme_void() +
     ggplot2::coord_equal() +
     ggplot2::labs(fill = expression(paste("Power [", mu, V^2, "/ Hz(dB)]")))
