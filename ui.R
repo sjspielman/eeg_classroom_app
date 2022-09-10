@@ -82,3 +82,4 @@ shinyUI(fluidPage(
         ) #mainpanel
     )# sidebar layout
 ))
+
