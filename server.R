@@ -30,6 +30,7 @@ shinyServer(function(input, output) {
     })
 
 
+
     # Make and export PSD plot ----------
     output$psd_plot <- renderPlot({
       make_psd_plot(psd_data(), input$psd_plot_channels, input$psd_frequency_range)
@@ -79,6 +80,15 @@ shinyServer(function(input, output) {
         downloadButton("alpha_power_topoplot_export")
       )
     })
+
+    # FAA calculations ----------------
+    output$FAA_table <- gt::render_gt({
+      make_faa_tibble(psd_data())
+    })
+
+
+
+
 
 
   }) # observeEvent

@@ -9,11 +9,11 @@
 
 library(shiny)
 library(shinyWidgets)
-library(eegUtils)
 source("utils.R")
 
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
+    tags$style("@import url(https://use.fontawesome.com/releases/v5.7.2/css/all.css);"),
 
     # Application title
     titlePanel("EEG in the classroom!"),
@@ -35,7 +35,10 @@ shinyUI(fluidPage(
             "Which electrode(s) (i.e. channels) should be plotted? All are selected by default.",
             choices = expected_channels,
             selected = expected_channels,
-            individual = TRUE
+            individual = TRUE,
+            checkIcon = list(
+              yes = tags$i(class = "fa fa-check",
+                           style = "color: steelblue"))
           ),
           sliderInput(
             "psd_frequency_range",
@@ -59,14 +62,22 @@ shinyUI(fluidPage(
         ), # sidebarpanel
 
         mainPanel(
-          # psd plot  ------------
-          uiOutput("psd_plot_ui"),
 
+          # FAA table ---------------
+          h3("FAA values"),
+          gt::gt_output("FAA_table"),
           br(),br(),
 
-          # alpha power topoplot -----------
-          uiOutput("alpha_power_topoplot_ui")
+          # psd plot  ------------
+          h3("PSD plot"),
+          uiOutput("psd_plot_ui"),
+          br(),
 
+
+
+          # alpha power topoplot -----------
+          h3("Alpha power topoplot"),
+          uiOutput("alpha_power_topoplot_ui")
 
         ) #mainpanel
     )# sidebar layout

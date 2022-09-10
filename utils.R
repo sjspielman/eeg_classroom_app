@@ -64,8 +64,7 @@ prep_psd_data <- function(edf_data) {
   eegUtils::compute_psd(edf_data) %>%
     tidyr::pivot_longer(-frequency,
                         names_to = "channel",
-                        values_to = "power") %>%
-    dplyr::mutate(power = 10*log10(power))
+                        values_to = "power")
 }
 
 
@@ -80,12 +79,13 @@ prep_psd_data <- function(edf_data) {
 #'  Default is `NULL` which plots all frequencies. NOT IMPLEMENTED YET.
 #'
 #' @return ggplot2 plot object
-make_psd_plot <- function(plot_data, plot_channels, frequency_range=NULL) {
+make_psd_plot <- function(plot_data, plot_channels, frequency_range = NULL) {
 
 
   # Reference: https://github.com/craddm/eegUtils/blob/0a1ab99e1b9cb2befd0b30489f0aeaf83d13469d/R/frequency_plotting.R#L189-L204
   plot <- plot_data %>%
     dplyr::filter(channel %in% plot_channels) %>%
+    dplyr::mutate(power = 10*log10(power)) %>%
     ggplot2::ggplot() +
     ggplot2::aes(x = frequency,
                  y = power,
@@ -143,4 +143,46 @@ make_power_topoplot <- function(psd_data, topo_bins = 6, freq_min = -Inf, freq_m
     ggplot2::labs(fill = expression(paste("Power [", mu, V^2, "/ Hz(dB)]")))
 
 
+}
+
+
+
+
+
+#' Function to calculate mean asymmetry
+#'
+#' @param psd_data df data from `make_psd_data()`
+#' @param freq_min minimum frequency to include in calculations
+#' @param freq_max minimum frequency to include in calculations
+#' @param channel_right right-side (numerator) channel for calculation
+#' @param channel_left left-side (denominator) channel for calculation
+#'
+#' @return single asymmetry value
+calculate_asymmetry <- function(psd_data, freq_min, freq_max, channel_right, channel_left) {
+
+  psd_data %>%
+    # frequency range and make longer
+    dplyr::filter(dplyr::between(frequency, freq_min, freq_max)) %>%
+    tidyr::pivot_wider(names_from = channel, values_from = power) %>%
+    # calculate ln(right/left)
+    dplyr::mutate(asymmetry = log({{channel_right}}/{{channel_left}})) %>%
+    # take the mean and pull out
+    dplyr::summarize(mean_asymmetry = mean(asymmetry)) %>%
+    dplyr::pull(mean_asymmetry)
+}
+
+
+
+#' Function to make FAA tibble asymmetry from pre-designated electrode pairs
+#'
+#' @param psd_data df data from `make_psd_data()`
+#'
+#' @return tibble of FAAs to display in app
+make_faa_tibble <- function(psd_data) {
+   tibble::tribble(
+     ~`Channels`, ~`FAA`,
+     "F7-F8", calculate_asymmetry(psd_data, alpha_freq_min, alpha_freq_max, F8, F7),
+     "AF3-AF4", calculate_asymmetry(psd_data, alpha_freq_min, alpha_freq_max, AF4, AF3),
+     "F3-F4", calculate_asymmetry(psd_data, alpha_freq_min, alpha_freq_max, F4, F3)
+   )
 }
