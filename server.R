@@ -16,9 +16,6 @@ shinyServer(function(input, output) {
       # Or, read in
       read_edf_file(infile$datapath)
     })
-    #edf_data <- reactive({
-    #  read_edf_file()
-    #})
 
     # Prep PSD data -------------
     psd_data <- reactive({
