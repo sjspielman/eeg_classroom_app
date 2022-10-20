@@ -1,12 +1,13 @@
 # Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
 # Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
 
-#on:
-#  push:
-#    branches: main
+on:
+  push:
+    branches: main
+  workflow_dispatch
 
-# This workflow only runs when it is manually dispatched
-on: workflow_dispatch
+# manual dispatched
+#on: workflow_dispatch
 
 name: shiny-deploy
 
