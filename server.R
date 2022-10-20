@@ -20,15 +20,10 @@ shinyServer(function(input, output) {
     #  read_edf_file()
     #})
 
-    ### Reactive variables for conditionalPanel interaction in ui.R
-    #output$data_exists <- reactive(!is.null(edf_data()))
-    #outputOptions(output, "data_exists", suspendWhenHidden = FALSE)
-
     # Prep PSD data -------------
     psd_data <- reactive({
       prep_psd_data(edf_data())
     })
-
 
 
     # Make and export PSD plot ----------
@@ -43,7 +38,7 @@ shinyServer(function(input, output) {
         plot <- make_psd_plot(psd_data(),
                               input$psd_plot_channels,
                               input$psd_frequency_range)
-        ggplot2::ggsave(file, plot, width = 6, height = 4)
+        ggplot2::ggsave(file, plot, width = 8, height = 5)
       }
     )
     output$psd_plot_ui <- renderUI({
