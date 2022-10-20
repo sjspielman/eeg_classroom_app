@@ -24,18 +24,25 @@ read_edf_file <- function(filepath = "data/Charliemusic_2019.04.12_08.52.45.edf"
 
   raw_data <- eegUtils::import_raw(filepath)
 
-  # Remove unused columns from `signals`
-  remove_columns <- c("INTERPOLATED", "GYROX", "GYROY", "MARKER", "MARKER_HARDWARE", "SYNC", "COUNTER")
-  raw_data$signals <- raw_data$signals %>%
-    dplyr::select(-dplyr::all_of(remove_columns),
-                  -dplyr::contains("CQ"),
-                  # eegUtils parsed this into `raw_data$timings$time`
-                  -dplyr::contains("TIME_STAMP"))
+  # Check that signal columns exist, after removing quotes from signal names
+  names(raw_data$signals) <- stringr::str_replace_all(
+    names(raw_data$signals),
+    "'|\"|`", "")
 
-  # Channels should now match `channel_options`
-  if (!identical( sort(expected_channels), sort(names(raw_data$signals)) ) ) {
-    stop("ERROR: Unexpected or missing channels in the input EDF file.")
+  if (!(all( expected_channels %in% names(raw_data$signals)) )) {
+    channel_print <- paste(expected_channels, collapse = ", ")
+    stop(
+      glue::glue(
+        "Provided EDF data does not contain the required channels.
+
+        Required channels are: {channel_print}."
+      )
+    )
   }
+
+  # Keep only expected signals
+  raw_data$signals <- raw_data$signals %>%
+    dplyr::select(dplyr::all_of(expected_channels))
 
   # Add in channel info
   raw_data$chan_info <- channel_location_df
@@ -105,7 +112,7 @@ make_psd_plot <- function(plot_data, plot_channels, frequency_range = NULL) {
     )
 
   if (!is.null(frequency_range)) {
-    plot <- plot + xlim(frequency_range)
+    plot <- plot + ggplot2::xlim(frequency_range)
   }
 
   return(plot)
