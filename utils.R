@@ -105,7 +105,7 @@ make_psd_plot <- function(plot_data, plot_channels, frequency_range = NULL) {
     )
 
   if (!is.null(frequency_range)) {
-    plot <- plot + xlim(frequency_range)
+    plot <- plot + ggplot2::xlim(frequency_range)
   }
 
   return(plot)
