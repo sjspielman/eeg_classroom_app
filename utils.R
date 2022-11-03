@@ -4,11 +4,6 @@ expected_channels <-c("AF3", "AF4", "F3", "F4", "F7", "F8", "FC5", "FC6", "T7", 
 channel_location_df <- eegUtils:::electrodeLocs %>%
   dplyr::filter(electrode %in% expected_channels)
 
-# alpha waves are in [8,12]
-alpha_freq_min <- 8
-alpha_freq_max <- 12
-
-
 #' Function to read and optionally reference an EDF file
 #'
 #' @param filepath Path to EDI file, with a local default for dev
@@ -67,6 +62,7 @@ read_edf_file <- function(filepath = "data/Charliemusic_2019.04.12_08.52.45.edf"
 #'
 #' @return df with three columns: frequency, electrode, power
 prep_psd_data <- function(edf_data) {
+
 
   eegUtils::compute_psd(edf_data) %>%
     tidyr::pivot_longer(-frequency,
@@ -183,13 +179,14 @@ calculate_asymmetry <- function(psd_data, freq_min, freq_max, channel_right, cha
 #' Function to make FAA tibble asymmetry from pre-designated electrode pairs
 #'
 #' @param psd_data df data from `make_psd_data()`
+#' @param alpha_range length-2 vector of low/high alpha frequency range
 #'
 #' @return tibble of FAAs to display in app
-make_faa_tibble <- function(psd_data) {
+make_faa_tibble <- function(psd_data, alpha_range) {
    tibble::tribble(
      ~`Channels`, ~`FAA`,
-     "F7-F8", calculate_asymmetry(psd_data, alpha_freq_min, alpha_freq_max, F8, F7),
-     "AF3-AF4", calculate_asymmetry(psd_data, alpha_freq_min, alpha_freq_max, AF4, AF3),
-     "F3-F4", calculate_asymmetry(psd_data, alpha_freq_min, alpha_freq_max, F4, F3)
+     "F7-F8", calculate_asymmetry(psd_data, alpha_range[1], alpha_range[2], F8, F7),
+     "AF3-AF4", calculate_asymmetry(psd_data, alpha_range[1], alpha_range[2], AF4, AF3),
+     "F3-F4", calculate_asymmetry(psd_data, alpha_range[1], alpha_range[2], F4, F3)
    )
 }

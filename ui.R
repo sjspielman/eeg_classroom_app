@@ -29,6 +29,14 @@ shinyUI(fluidPage(
                     accept = ".edf"),
 
           # PSD plot selection --------------------
+          h4("Alpha frequency range"),
+          sliderInput(
+            "alpha_frequency_range",
+            "Select a range of frequencies (inclusive!) to consider as alpha waves. Generally is somewhere between 7-13 Hz.",
+            min = 7, max = 13, step = 1,
+            value = c(8, 12)
+          ),
+          br(),
           h4("Power spectral density plot"),
           shinyWidgets::checkboxGroupButtons(
             "psd_plot_channels",
@@ -72,8 +80,6 @@ shinyUI(fluidPage(
           h3("PSD plot"),
           uiOutput("psd_plot_ui"),
           br(),
-
-
 
           # alpha power topoplot -----------
           h3("Alpha power topoplot"),

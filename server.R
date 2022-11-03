@@ -75,7 +75,7 @@ shinyServer(function(input, output) {
 
     # FAA calculations ----------------
     output$FAA_table <- gt::render_gt({
-      make_faa_tibble(psd_data())
+      make_faa_tibble(psd_data(), input$alpha_frequency_range)
     })
 
 
